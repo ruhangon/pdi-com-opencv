@@ -9,8 +9,8 @@ public class Main {
 		Scanner scan = new Scanner(System.in);
 		Imagem imagem = new Imagem();
 		String menu = "Menu \n" + "1. Carrega imagem para o programa \n" + "2. Aplica filtro de cinza \n"
-				+ "3. Realiza a detecção de borda por uma das opções \n" + "20. Verifica RGB de um pixel \n"
-				+ "0. Sai do programa";
+				+ "3. Realiza a detecção de borda por uma das opções \n" + "4. Aplica a técnica de dilatação \n"
+				+ "5. Aplica a técnica de erosão \n" + "20. Verifica RGB de um pixel \n" + "0. Sai do programa";
 
 		int op = -1;
 
@@ -52,6 +52,24 @@ public class Main {
 							System.out.println("Detecção de bordas pelo algoritmo de Canny");
 							imagem.aplicaDeteccaoDeBordaComCanny(scan);
 						}
+					} else {
+						System.out.println("\nNão existe imagem carregada no programa");
+					}
+					break;
+
+				case 4:
+					if (imagem.isExisteImg()) {
+						System.out.println("Técnica de dilatação");
+						imagem.aplicaDilatacao();
+					} else {
+						System.out.println("\nNão existe imagem carregada no programa");
+					}
+					break;
+
+				case 5:
+					if (imagem.isExisteImg()) {
+						System.out.println("Técnica de erosão");
+						imagem.aplicaErosao();
 					} else {
 						System.out.println("\nNão existe imagem carregada no programa");
 					}

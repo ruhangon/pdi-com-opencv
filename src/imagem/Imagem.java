@@ -13,11 +13,13 @@ import javax.imageio.ImageIO;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 public class Imagem {
 	private String caminhoImg;
+	private String extensaoImg;
 	private boolean existeImg = false;
 	private Mat src;
 	private Mat dst;
@@ -32,6 +34,7 @@ public class Imagem {
 			cam = new File(this.getCaminhoImg());
 			if (cam.exists()) {
 				this.setExisteImg(true);
+				descobreExtensao();
 			} else {
 				System.out.println("a imagem do caminho passado não existe");
 			}
@@ -54,11 +57,51 @@ public class Imagem {
 			this.dst.get(0, 0, data1);
 			novaImagemBI = new BufferedImage(this.dst.cols(), this.dst.rows(), BufferedImage.TYPE_BYTE_GRAY);
 			novaImagemBI.getRaster().setDataElements(0, 0, this.dst.cols(), this.dst.rows(), data1);
-			String novo = "imgs/filtros/novaimagem.png"; // criar método para descobrir extensão exata, para poder
-															// trabalhar com outras além do png
+			String novo = "imgs/filtros/novaimagem.";
+			novo = novo.concat(this.getExtensaoImg());
 			File resultado = new File(novo);
-			ImageIO.write(novaImagemBI, "png", resultado);
+			ImageIO.write(novaImagemBI, this.getExtensaoImg(), resultado);
 			System.out.println("Nova imagem com filtro de cinza salva na pasta imgs/filtros");
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+	}
+
+	// aplica dilatação em imagem
+	public void aplicaDilatacao() {
+		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+		this.src = Imgcodecs.imread(this.getCaminhoImg());
+		this.dst = new Mat(src.rows(), src.cols(), src.type());
+		this.dst = this.src;
+		try {
+			int tamanhoDilatacao = 5;
+			Mat element1 = Imgproc.getStructuringElement(Imgproc.MORPH_RECT,
+					new Size(2 * tamanhoDilatacao + 1, 2 * tamanhoDilatacao + 1));
+			Imgproc.dilate(this.src, this.dst, element1);
+			String nomeNovoArquivo = "imgs/filtros/novaimagemcomdilatacao.";
+			nomeNovoArquivo = nomeNovoArquivo.concat(this.getExtensaoImg());
+			Imgcodecs.imwrite(nomeNovoArquivo, dst);
+			System.out.println("Nova imagem dilatada salva na pasta imgs/filtros");
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+	}
+
+	// aplica erosão em imagem
+	public void aplicaErosao() {
+		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+		this.src = Imgcodecs.imread(this.getCaminhoImg());
+		this.dst = new Mat(src.rows(), src.cols(), src.type());
+		this.dst = this.src;
+		try {
+			int tamanhoErosao = 5;
+			Mat element = Imgproc.getStructuringElement(Imgproc.MORPH_RECT,
+					new Size(2 * tamanhoErosao + 1, 2 * tamanhoErosao + 1));
+			Imgproc.erode(this.src, this.dst, element);
+			String nomeNovoArquivo = "imgs/filtros/novaimagemcomerosao.";
+			nomeNovoArquivo = nomeNovoArquivo.concat(this.getExtensaoImg());
+			Imgcodecs.imwrite(nomeNovoArquivo, dst);
+			System.out.println("Nova imagem com erosão salva na pasta imgs/filtros");
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
@@ -82,7 +125,9 @@ public class Imagem {
 		int y = scan.nextInt();
 		scan.nextLine();
 		Imgproc.Sobel(this.src, this.dst, profundidade, x, y);
-		Imgcodecs.imwrite("imgs/filtros/novaimagemcomdeteccaoporsobel.png", dst);
+		String nomeNovoArquivo = "imgs/filtros/novaimagemcomSobel.";
+		nomeNovoArquivo = nomeNovoArquivo.concat(this.getExtensaoImg());
+		Imgcodecs.imwrite(nomeNovoArquivo, dst);
 	}
 
 	// filtro de detecção de borda por Canny
@@ -101,7 +146,9 @@ public class Imagem {
 		// Canny usado será public static void Canny(Mat image, Mat edges,
 		// double threshold1, double threshold2)
 		Imgproc.Canny(this.src, this.dst, th1, th2);
-		Imgcodecs.imwrite("imgs/filtros/novaimagemcomdeteccaoporcanny.png", dst);
+		String nomeNovoArquivo = "imgs/filtros/novaimagemcomCanny.";
+		nomeNovoArquivo = nomeNovoArquivo.concat(this.getExtensaoImg());
+		Imgcodecs.imwrite(nomeNovoArquivo, dst);
 	}
 
 	// escolhe uma opção para a detecção de bordas
@@ -173,12 +220,32 @@ public class Imagem {
 		System.out.println(cor.getRed() + " - " + cor.getGreen() + " - " + cor.getBlue());
 	}
 
+	// descobre a extensão do arquivo, exemplo .jpg
+	private void descobreExtensao() {
+		int localPonto = -1; // pega a posição do ponto na palavra
+		for (int i = 0; i < this.getCaminhoImg().length(); i++) {
+			if (this.getCaminhoImg().charAt(i) == ('.')) {
+				localPonto = i + 1;
+				break;
+			}
+		}
+		this.extensaoImg = this.getCaminhoImg().substring(localPonto, this.getCaminhoImg().length());
+	}
+
 	public String getCaminhoImg() {
 		return caminhoImg;
 	}
 
 	public void setCaminhoImg(String caminhoImg) {
 		this.caminhoImg = caminhoImg;
+	}
+
+	public String getExtensaoImg() {
+		return extensaoImg;
+	}
+
+	public void setExtensaoImg(String extensaoImg) {
+		this.extensaoImg = extensaoImg;
 	}
 
 	public boolean isExisteImg() {
