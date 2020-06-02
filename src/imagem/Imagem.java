@@ -13,6 +13,7 @@ import javax.imageio.ImageIO;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 public class Imagem {
@@ -29,8 +30,11 @@ public class Imagem {
 			System.out.print("caminho: ");
 			this.setCaminhoImg(scan.nextLine());
 			cam = new File(this.getCaminhoImg());
-			if (cam.exists())
+			if (cam.exists()) {
 				this.setExisteImg(true);
+			} else {
+				System.out.println("a imagem do caminho passado não existe");
+			}
 		} while (this.isExisteImg() != true);
 	}
 
@@ -58,6 +62,67 @@ public class Imagem {
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
+	}
+
+	// filtro de detecção de borda por Sobel
+	public void aplicaDeteccaoDeBordaComSobel(Scanner scan) {
+		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+		this.src = Imgcodecs.imread(this.getCaminhoImg());
+		this.dst = new Mat();
+		System.out.println("Escolha a profundidade");
+		System.out.print("profundidade: ");
+		int profundidade = scan.nextInt();
+		scan.nextLine();
+		System.out.println("Escolha o x");
+		System.out.print("x: ");
+		int x = scan.nextInt();
+		scan.nextLine();
+		System.out.println("Escolha o y");
+		System.out.print("y: ");
+		int y = scan.nextInt();
+		scan.nextLine();
+		Imgproc.Sobel(this.src, this.dst, profundidade, x, y);
+		Imgcodecs.imwrite("imgs/filtros/novaimagemcomdeteccaoporsobel.png", dst);
+	}
+
+	// filtro de detecção de borda por Canny
+	public void aplicaDeteccaoDeBordaComCanny(Scanner scan) {
+		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+		this.src = Imgcodecs.imread(this.getCaminhoImg());
+		this.dst = new Mat();
+		System.out.println("Escolha o valor de threshold 1");
+		System.out.print("resposta: ");
+		double th1 = scan.nextDouble();
+		scan.nextLine();
+		System.out.println("Escolha o valor de threshold 2");
+		System.out.print("resposta: ");
+		double th2 = scan.nextDouble();
+		scan.nextLine();
+		// Canny usado será public static void Canny(Mat image, Mat edges,
+		// double threshold1, double threshold2)
+		Imgproc.Canny(this.src, this.dst, th1, th2);
+		Imgcodecs.imwrite("imgs/filtros/novaimagemcomdeteccaoporcanny.png", dst);
+	}
+
+	// escolhe uma opção para a detecção de bordas
+	public int escolheDeteccaoDeBorda(Scanner scan) {
+		int n = -1;
+		do {
+			try {
+				System.out.println("Escolha uma das opções para aplicar a detecção de bordas");
+				System.out.println("1. Roberts, 2. Sobel, 3. Canny");
+				System.out.print("resposta: ");
+				n = scan.nextInt();
+				scan.nextLine();
+				if ((n < 1) || (n > 3))
+					System.out.println("opção inválida");
+			} catch (InputMismatchException e) {
+				System.out.println("opção inválida");
+				n = -1;
+				scan.nextLine();
+			}
+		} while ((n < 1) || (n > 3));
+		return n;
 	}
 
 	// mostra as informações de rgb de um pixel passado
